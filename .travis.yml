@@ -1,0 +1,64 @@
+# Code adapted from MichaelCurrie @ https://gist.github.com/MichaelCurrie/802ce28c993ff2dd632c
+# Full explanation on using this Travis CI config available at https://gist.github.com/cbjuan/cdab04a0c96e1792d5fdff6a007b4067
+
+language: python
+python:
+    - 3.5
+    - 3.6
+    - "nightly"
+
+notifications:
+    email:
+      recipients:
+        - cruzbenitojuan@gmail.com
+      on_success: never 
+      on_failure: always 
+
+os:
+  - linux
+
+before_install:
+    - sudo apt-get update
+    - sudo apt-get -y install python-pip
+    - sudo pip install --upgrade pip
+    - pip install --upgrade pip
+    - pip install pycodestyle
+    - pip install autopep8==1.3.5
+    - pip install -r requirements.txt
+
+script:
+    # Run pep8 (pycodestyle) on all .py files in all subfolders
+    # We must ignore E402 module level import not at top of file
+    # because of use case sys.path.append('..'); import <module>
+    - num_errors_before=`find . -name \*.py -exec pycodestyle --ignore=E402 {} + | wc -l`
+    - echo $num_errors_before
+
+    - cd "$TRAVIS_BUILD_DIR"
+    - git config --global user.email "cruzbenitojuan@gmail.com"
+    # From https://help.github.com/articles/setting-your-username-in-git/:
+    # "Tip: You don't have to use your real name--any name works. Git
+    # actually associates commits by email address; the username is only
+    # used for identification. If you use your email address associated
+    # with a GitHub account, we'll use your GitHub username, instead of
+    # this name.
+    - git config --global user.name "Travis CI"
+    - git checkout $TRAVIS_BRANCH
+    - git pull --rebase # resolve conflicts here
+
+    - find . -name \*.py -exec autopep8 --recursive --aggressive --in-place {} +
+    - num_errors_after=`find . -name \*.py -exec pycodestyle --ignore=E402 {} + | wc -l`
+    - echo $num_errors_after
+
+    - |
+        if (( $num_errors_after < $num_errors_before )); then
+            git commit -a -m "PEP8 Fix"
+            git config --global push.default simple # Push only to the current branch.
+            git remote set-url origin https://${GITHUB_API_KEY}@github.ibm.com/${TRAVIS_REPO_SLUG}.git/
+            # Make sure to make the output quiet, or else the API token will
+            # leak!  This works because the API key can replace your password.
+            git push --quiet
+        fi
+    - cd "$TRAVIS_BUILD_DIR"
+
+    # List the remaining errors - these will have to be fixed manually
+    - find . -name \*.py -exec pycodestyle --ignore=E402,W504,W605 {} +
