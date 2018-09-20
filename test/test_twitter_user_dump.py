@@ -48,7 +48,7 @@ class IntegrationTestTwitterUserDump(unittest.TestCase):
         self.assertFalse(
             TwitterUtils(
                 '../resources/credentials/twitterCredentials.json')
-            .get_all_tweets("userfake-"+str(time.time()), 'csv'))
+            .get_all_tweets("userfake-" + str(time.time()), 'csv'))
 
 
 class TestTwitterUserDump(unittest.TestCase):
