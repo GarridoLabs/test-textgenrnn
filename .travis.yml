@@ -10,7 +10,7 @@ python:
 notifications:
     email:
       recipients:
-        - cruzbenitojuan@gmail.com
+        - garridolabs@gmail.com
       on_success: never 
       on_failure: always 
 
@@ -34,7 +34,7 @@ script:
     - echo $num_errors_before
 
     - cd "$TRAVIS_BUILD_DIR"
-    - git config --global user.email "cruzbenitojuan@gmail.com"
+    - git config --global user.email "garridolabs@gmail.com"
     # From https://help.github.com/articles/setting-your-username-in-git/:
     # "Tip: You don't have to use your real name--any name works. Git
     # actually associates commits by email address; the username is only
@@ -53,7 +53,7 @@ script:
         if (( $num_errors_after < $num_errors_before )); then
             git commit -a -m "PEP8 Fix"
             git config --global push.default simple # Push only to the current branch.
-            git remote set-url origin https://${GITHUB_API_KEY}@github.ibm.com/${TRAVIS_REPO_SLUG}.git/
+            git remote set-url origin https://${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git/
             # Make sure to make the output quiet, or else the API token will
             # leak!  This works because the API key can replace your password.
             git push --quiet
