@@ -19,6 +19,7 @@ import unittest
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 from resources.twitter_user_dump import TwitterUtils
+from test_config import skip_integration_test
 
 
 class TestTwitterUserDump(unittest.TestCase):
@@ -27,6 +28,7 @@ class TestTwitterUserDump(unittest.TestCase):
     """
 
     # Method to test get tweets from users
+    @unittest.skipIf(skip_integration_test, "integration test")
     def test_twitter_user_dump(self):
 
         # Test get tweets from @garridoLabs
