@@ -62,3 +62,6 @@ script:
 
     # List the remaining errors - these will have to be fixed manually
     - find . -name \*.py -exec pycodestyle --ignore=E402,W504,W605 {} +
+
+    - cd test
+    - python -m unittest discover -v
