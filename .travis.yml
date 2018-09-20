@@ -53,7 +53,7 @@ script:
         if (( $num_errors_after < $num_errors_before )); then
             git commit -a -m "PEP8 Fix"
             git config --global push.default simple # Push only to the current branch.
-            git remote set-url origin https://${GITHUB_API_KEY}@github.ibm.com/${TRAVIS_REPO_SLUG}.git/
+            git remote set-url origin https://${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git/
             # Make sure to make the output quiet, or else the API token will
             # leak!  This works because the API key can replace your password.
             git push --quiet
