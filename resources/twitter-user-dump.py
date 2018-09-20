@@ -17,7 +17,8 @@ access_secret = data_loaded['accessTokenSecret']
 
 
 def get_all_tweets(screen_name, outputFormat):
-    # Twitter only allows access to a users most recent 3240 tweets with this method
+    # Twitter only allows access to a users
+    # most recent 3240 tweets with this method
     # authorize twitter, initialize tweepy
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -27,8 +28,8 @@ def get_all_tweets(screen_name, outputFormat):
     # initialize a list to hold all the tweepy Tweets
     alltweets = []
 
-    # make initial request for most recent tweets (200 is the maximum allowed
-    # count)
+    # make initial request for most recent tweets
+    # (200 is the maximum allowed count)
     new_tweets = api.user_timeline(
         screen_name=screen_name, count=200, tweet_mode='extended')
 
@@ -44,7 +45,8 @@ def get_all_tweets(screen_name, outputFormat):
 
         # all subsiquent requests use the max_id param to prevent duplicates
         new_tweets = api.user_timeline(
-            screen_name=screen_name, count=200, tweet_mode='extended', max_id=oldest)
+            screen_name=screen_name, count=200,
+            tweet_mode='extended', max_id=oldest)
 
         # save most recent tweets
         alltweets.extend(new_tweets)
@@ -55,8 +57,8 @@ def get_all_tweets(screen_name, outputFormat):
         print("...%s tweets downloaded so far" % (len(alltweets)))
 
     if outputFormat == 'csv':
-        # transform the tweepy tweets into a 2D array that will populate the
-        # csv
+        # transform the tweepy tweets into a
+        # 2D array that will populate the csv
         outtweets = [[tweet.id_str, tweet.created_at,
                       tweet.full_text] for tweet in alltweets]
         # write the csv
@@ -66,8 +68,8 @@ def get_all_tweets(screen_name, outputFormat):
             writer.writerows(outtweets)
 
     if outputFormat == 'txt':
-        # transform the tweepy tweets into a 2D array that will populate the
-        # csv
+        # transform the tweepy tweets into
+        # a 2D array that will populate the txt
         outtweets = [[tweet.full_text] for tweet in alltweets]
         # write the txt
         with open('%s_tweets.txt' % screen_name, 'w') as f:
