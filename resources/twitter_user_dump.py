@@ -114,7 +114,7 @@ if __name__ == '__main__':
             fileFormat = 'csv'
         else:
             fileFormat = 'both'
-    except:
+    except BaseException:
         fileFormat = 'both'
 
     TwitterUtils('credentials/twitterCredentials.json').get_all_tweets(
