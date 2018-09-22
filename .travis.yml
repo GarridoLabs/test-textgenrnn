@@ -41,8 +41,10 @@ script:
     # with a GitHub account, we'll use your GitHub username, instead of
     # this name.
     - git config --global user.name "Travis CI"
-    - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && git pull --rebase'
-    #resolve conflicts here
+    - | 
+        if (( "${TRAVIS_PULL_REQUEST}" = "false" )); then
+            git pull --rebase #resolve conflicts here
+        fi
 
     - find . -name \*.py -exec autopep8 --recursive --aggressive --in-place {} +
     - num_errors_after=`find . -name \*.py -exec pycodestyle --ignore=E402 {} + | wc -l`
