@@ -8,7 +8,7 @@ class TextGen(object):
         self.textgen = textgenrnn()
 
     def findModel(self, query):
-        listFiles = glob.glob('./'+str(query)+'*.hdf5')
+        listFiles = glob.glob('./' + str(query) + '*.hdf5')
         if len(listFiles) is 0:
             return False
         elif len(listFiles) is 1:
@@ -32,7 +32,7 @@ class TextGen(object):
     def train(self, inputFile, epochs=None, modelFile=None):
         self.textgen.train_from_file(inputFile, num_epochs=epochs)
         if modelFile is None:
-            modelFile = str(inputFile)+'.hdf5'
+            modelFile = str(inputFile) + '.hdf5'
         self.textgen.save(modelFile)
 
     def generate(self, modelFile, num, temperature):
@@ -42,4 +42,4 @@ class TextGen(object):
         elif loadResult is False:
             return "Error retrieving the model"
         else:
-            return "The following similar models were found "+str(loadResult)
+            return "The following similar models were found " + str(loadResult)
