@@ -42,7 +42,7 @@ script:
     # this name.
     - git config --global user.name "Travis CI"
     - | 
-        if (( $TRAVIS_PULL_REQUEST = "false" )); then
+        if (( "${TRAVIS_PULL_REQUEST}" == "false" )); then
             git pull --rebase #resolve conflicts here
         fi
 
