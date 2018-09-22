@@ -12,6 +12,7 @@ import csv
 import json
 import sys
 import os
+import time
 
 
 class TwitterUtils():
@@ -37,6 +38,8 @@ class TwitterUtils():
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.access_key, self.access_secret)
         api = tweepy.API(auth)
+
+        currentTime = str(time.time())
 
         # initialize a list to hold all the tweepy Tweets
         alltweets = []
@@ -73,23 +76,25 @@ class TwitterUtils():
 
             print("...%s tweets downloaded so far" % (len(alltweets)))
 
-        if outputFormat == 'csv':
+        if outputFormat == 'csv' or outputFormat == 'both':
             # transform the tweepy tweets into a
             # 2D array that will populate the csv
             outtweets = [[tweet.id_str, tweet.created_at,
                           tweet.full_text] for tweet in alltweets]
             # write the csv
-            with open('%s_tweets.csv' % screen_name, 'w') as f:
+            with open('%s_tweets_%s.csv' % (screen_name, currentTime),
+                      'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(["id", "created_at", "text"])
                 writer.writerows(outtweets)
 
-        if outputFormat == 'txt':
+        if outputFormat == 'txt' or outputFormat == 'both':
             # transform the tweepy tweets into
             # a 2D array that will populate the txt
             outtweets = [[tweet.full_text] for tweet in alltweets]
             # write the txt
-            with open('%s_tweets.txt' % screen_name, 'w') as f:
+            with open('%s_tweets_%s.txt' % (screen_name, currentTime),
+                      'w') as f:
                 writer = csv.writer(f)
                 # writer.writerow(["text"])
                 writer.writerows(outtweets)
@@ -99,13 +104,18 @@ class TwitterUtils():
 
 if __name__ == '__main__':
     # 1st param for this script: username
-    # 2nd param: the format to save the data, csv or txt typically
+    # 2nd param: the format to save the data, csv or txt typically or both
     userParam = 1
     outputParam = 2
-    if sys.argv[outputParam] == 'txt':
-        fileFormat = 'txt'
-    else:
-        fileFormat = 'csv'
+    try:
+        if sys.argv[outputParam] == 'txt':
+            fileFormat = 'txt'
+        elif sys.argv[outputParam] == 'csv':
+            fileFormat = 'csv'
+        else:
+            fileFormat = 'both'
+    except:
+        fileFormat = 'both'
 
     TwitterUtils('credentials/twitterCredentials.json').get_all_tweets(
         str(sys.argv[userParam]), str(fileFormat))
