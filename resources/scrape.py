@@ -4,26 +4,19 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 from time import sleep
 import json
 import datetime
+import sys
 
 
 class TwitterScrape():
 
-    # edit these three variables
-    user = 'marianorajoy'
-    start = datetime.datetime(2011, 4, 1)  # year, month, day
-    end = datetime.datetime(2018, 9, 22)  # year, month, day
+    TWITTER_IDS_FILES_SUBFIX = "_ids.json"
+    ID_SELECTOR = '.time a.tweet-timestamp'
+    TWEET_SELECTOR = 'li.js-stream-item'
+    TWEETS_PER_PAGE = 10
+    DEFAULT_DELAY_IN_SECONDS = 1
 
-    # only edit these if you're having problems
-    delay = 1  # time to wait on each page load before reading the page
-    driver = webdriver.Safari()  # options are Chrome() Firefox() Safari()
-
-    # don't mess with this stuff
-    twitter_ids_filename = 'all_ids.json'
-    days = (end - start).days + 1
-    id_selector = '.time a.tweet-timestamp'
-    tweet_selector = 'li.js-stream-item'
-    user = user.lower()
-    ids = []
+    def twitter_ids_filename(self, user: str):
+        return user + self.TWITTER_IDS_FILES_SUBFIX
 
     def format_day(self, date):
         day = '0' + str(date.day) if len(str(date.day)) == 1 else str(date.day)
@@ -32,74 +25,98 @@ class TwitterScrape():
         year = str(date.year)
         return '-'.join([year, month, day])
 
-    def form_url(self, since, until):
+    def form_url(self, user, since, until):
         p1 = 'https://twitter.com/search?f=tweets&vertical=default&q=from%3A'
-        p2 = self.user + '%20since%3A' + since + '%20until%3A' + \
-            until + 'include%3Aretweets&src=typd'
+        p2 = user + '%20since%3A' + self.format_day(since) + '%20until%3A' + \
+            self.format_day(until) + 'include%3Aretweets&src=typd'
         return p1 + p2
 
-    def increment_day(self, date, i):
-        return date + datetime.timedelta(days=i)
+    def increment_day(self, date, number_of_increments_in_days = 1):
+        return date + datetime.timedelta(days=number_of_increments_in_days)
 
-    def scrape(self):
-        for day in range(self.days):
-            d1 = self.format_day(self.increment_day(self.start, 0))
-            d2 = self.format_day(self.increment_day(self.start, 1))
-            url = self.form_url(d1, d2)
-            print(url)
-            print(d1)
-            self.driver.get(url)
-            sleep(self.delay)
+    def find_all_tweets_on_actual_page(self, driver, delay, tweets_per_page = TWEETS_PER_PAGE):
+        found_tweets = driver.find_elements_by_css_selector(
+                    self.TWEET_SELECTOR)
+        
+        number_loads = 1
+
+        while len(found_tweets) >= tweets_per_page * number_loads:
+            print('scrolling down to load more tweets')
+            number_loads += 1
+            driver.execute_script(
+                'window.scrollTo(0, document.body.scrollHeight);')
+            sleep(delay)
+            found_tweets = driver.find_elements_by_css_selector(
+                self.TWEET_SELECTOR)
+
+        return found_tweets
+
+    def extract_tweets_ids(self, found_tweets_html_elements):
+        ids = []
+        for tweet in found_tweets_html_elements:
+            try:
+                id = tweet.find_element_by_css_selector(
+                    self.ID_SELECTOR).get_attribute('href').split('/')[-1]
+                ids.append(id)
+            except StaleElementReferenceException:
+                print('lost element reference', tweet)
+
+        return ids
+
+    def write_found_tweets(self, user, ids, merge_with_previous_ids_in_same_file = True):
+        if merge_with_previous_ids_in_same_file:
+            try:
+                with open(self.twitter_ids_filename(user)) as user_tweet_ids_file:
+                    ids = list(set(ids + json.load(user_tweet_ids_file)))                    
+            except FileNotFoundError:            
+                print('Warning: no previous file found to merge')
+
+        print('tweets found on this scrape: ', len(ids))
+        print('total tweet count: ', len(ids))
+
+        with open(self.twitter_ids_filename(user), 'w') as outfile:
+            json.dump(ids, outfile)
+
+    def get_url(self, driver, url, delay):
+        print(url)   
+        driver.get(url)
+        sleep(delay)
+
+    def scrape(self, user, startDate, endDate, delay = DEFAULT_DELAY_IN_SECONDS):
+        driver = webdriver.Safari()  # options are Chrome() Firefox() Safari()
+        user = user.lower()
+        days = (endDate - startDate).days + 1
+        ids = []
+        for day in range(days):
+            self.get_url(driver, self.form_url(user, startDate, self.increment_day(startDate)), delay)
 
             try:
-                found_tweets = self.driver.find_elements_by_css_selector(
-                    self.tweet_selector)
-                increment = 10
-
-                while len(found_tweets) >= increment:
-                    print('scrolling down to load more tweets')
-                    self.driver.execute_script(
-                        'window.scrollTo(0, document.body.scrollHeight);')
-                    sleep(self.delay)
-                    found_tweets = self.driver.find_elements_by_css_selector(
-                        self.tweet_selector)
-                    increment += 10
-
-                print('{} tweets found, {} total'.format(
-                    len(found_tweets), len(self.ids)))
-
-                for tweet in found_tweets:
-                    try:
-                        id = tweet.find_element_by_css_selector(
-                            self.id_selector).get_attribute('href').split('/')[-1]
-                        self.ids.append(id)
-                    except StaleElementReferenceException as e:
-                        print('lost element reference', tweet)
+                found_tweets = self.find_all_tweets_on_actual_page(driver, delay)
+                ids = ids + self.extract_tweets_ids(found_tweets)
+                print('{} tweets found, {} total'.format(len(found_tweets), len(ids)))
 
             except NoSuchElementException:
                 print('no tweets on this day')
 
-            self.start = self.increment_day(self.start, 1)
-
-        try:
-            with open(self.twitter_ids_filename) as f:
-                all_ids = self.ids + json.load(f)
-                data_to_write = list(set(all_ids))
-                print('tweets found on this scrape: ', len(self.ids))
-                print('total tweet count: ', len(data_to_write))
-        except FileNotFoundError:
-            with open(self.twitter_ids_filename, 'w') as f:
-                all_ids = self.ids
-                data_to_write = list(set(all_ids))
-                print('tweets found on this scrape: ', len(self.ids))
-                print('total tweet count: ', len(data_to_write))
-
-        with open(self.twitter_ids_filename, 'w') as outfile:
-            json.dump(data_to_write, outfile)
-
+            startDate = self.increment_day(startDate)
+        
+        self.write_found_tweets(user, ids)
+        
         print('all done here')
-        self.driver.close()
+        driver.close()
+
+
+def parseDate(date):
+    return datetime.datetime.strptime(date, '%Y%m%d')
 
 
 if __name__ == '__main__':
-    TwitterScrape().scrape()
+    twitterUserParam = 1
+    startDateParam = 2
+    endDateParam = 3
+
+    TwitterScrape().scrape(
+        sys.argv[twitterUserParam],
+        parseDate(sys.argv[startDateParam]),
+        parseDate(sys.argv[endDateParam])
+    )
