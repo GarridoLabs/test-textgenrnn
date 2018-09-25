@@ -69,7 +69,8 @@ class TwitterScrape():
             self, user, ids, merge_with_previous_ids_in_same_file=True):
         if merge_with_previous_ids_in_same_file:
             try:
-                with open(self.twitter_ids_filename(user)) as user_tweet_ids_file:
+                with open(self.twitter_ids_filename(user)) \
+                        as user_tweet_ids_file:
                     ids = list(set(ids + json.load(user_tweet_ids_file)))
             except FileNotFoundError:
                 print('Warning: no previous file found to merge')
