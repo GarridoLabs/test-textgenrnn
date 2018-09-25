@@ -11,9 +11,6 @@ from time import sleep
 
 
 class TweetsDump():
-    # CHANGE THIS TO THE USER YOU WANT
-    user = 'hectorabrahammp'
-
     def __init__(self, credentialsPath):
         with open(credentialsPath, "r") as data_file:
             data_loaded = json.load(data_file)
@@ -33,14 +30,14 @@ class TweetsDump():
         else:
             return entry["source"]
 
-    def dump_all_tweets(self, ids_input_file):
+    def dump_all_tweets(self, ids_input_file, output_base_name):
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.access_key, self.access_secret)
         api = tweepy.API(auth)
 
-        user = self.user.lower()
-        output_file = '{}.json'.format(user)
-        output_file_short = '{}_short.json'.format(user)
+        output_base_name = output_base_name.lower()
+        output_file = '{}.json'.format(output_base_name)
+        output_file_short = '{}_short.json'.format(output_base_name)
         compression = zipfile.ZIP_DEFLATED
 
         with open(ids_input_file) as f:
@@ -70,7 +67,7 @@ class TweetsDump():
             json.dump(all_data, outfile)
 
         print('creating ziped master json file')
-        zf = zipfile.ZipFile('{}.zip'.format(user), mode='w')
+        zf = zipfile.ZipFile('{}.zip'.format(output_base_name), mode='w')
         zf.write(output_file, compress_type=compression)
         zf.close()
 
@@ -97,15 +94,20 @@ class TweetsDump():
 
         with open(output_file_short) as master_file:
             data = json.load(master_file)
-            fields = ["favorite_count", "source", "text", "in_reply_to_screen_name", "is_retweet", "created_at", "retweet_count", "id_str"]
+            fields = ["favorite_count", "source", "text", "in_reply_to_screen_name",
+                      "is_retweet", "created_at", "retweet_count", "id_str"]
             print('creating CSV version of minimized json master file')
-            f = csv.writer(open('{}.csv'.format(user), 'w'))
+            f = csv.writer(open('{}.csv'.format(output_base_name), 'w'))
             f.writerow(fields)
             for x in data:
-                f.writerow([x["favorite_count"], x["source"], x["text"], x["in_reply_to_screen_name"], x["is_retweet"], x["created_at"], x["retweet_count"], x["id_str"]])
+                f.writerow([x["favorite_count"], x["source"], x["text"], x["in_reply_to_screen_name"],
+                            x["is_retweet"], x["created_at"], x["retweet_count"], x["id_str"]])
+
 
 if __name__ == '__main__':
     tweetsIdsFile = 1
+    outputBaseName = 2
 
-    TweetsDump('/Users/hector/Documents/Develop/Python/test-textgenrnn/resources/credentials/twitterCredentials.json').dump_all_tweets(
-        sys.argv[tweetsIdsFile])
+    TweetsDump('credentials/twitterCredentials.json').dump_all_tweets(
+        sys.argv[tweetsIdsFile],
+        sys.argv[outputBaseName])
