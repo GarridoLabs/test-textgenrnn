@@ -30,22 +30,16 @@ class TweetsDump():
         else:
             return entry["source"]
 
-    def dump_all_tweets(self, ids_input_file, output_base_name):
-        auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
-        auth.set_access_token(self.access_key, self.access_secret)
-        api = tweepy.API(auth)
-
-        output_base_name = output_base_name.lower()
-        output_file = '{}.json'.format(output_base_name)
-        output_file_short = '{}_short.json'.format(output_base_name)
-        compression = zipfile.ZIP_DEFLATED
-
+    def get_ids(self, ids_input_file):
         with open(ids_input_file) as f:
             ids = json.load(f)
 
         print('total ids: {}'.format(len(ids)))
 
-        all_data = []
+        return ids
+
+    def retrieve_tweets(self, api, ids):
+        all_tweets = []
         start = 0
         end = 100
         limit = len(ids)
@@ -59,49 +53,37 @@ class TweetsDump():
             end += 100
             tweets = api.statuses_lookup(id_batch)
             for tweet in tweets:
-                all_data.append(dict(tweet._json))
+                all_tweets.append(dict(tweet._json))
 
         print('metadata collection complete')
+        return all_tweets
+
+    def write_tweets_json(self, output_file, tweets):
         print('creating master json file')
         with open(output_file, 'w') as outfile:
-            json.dump(all_data, outfile)
+            json.dump(tweets, outfile)
 
-        print('creating ziped master json file')
-        zf = zipfile.ZipFile('{}.zip'.format(output_base_name), mode='w')
-        zf.write(output_file, compress_type=compression)
-        zf.close()
+    def write_tweets_plain_text(self, output_file, tweets):
+        f = csv.writer(open(output_file, 'w'))
+        outtweets = []
+        for tweet in tweets:
+            if not tweet["retweeted"]:
+                f.writerow([tweet["text"]])
 
-        results = []
+    def dump_all_tweets(self, ids_input_file, output_base_name):
+        auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
+        auth.set_access_token(self.access_key, self.access_secret)
+        api = tweepy.API(auth)
 
-        with open(output_file) as json_data:
-            data = json.load(json_data)
-            for entry in data:
-                t = {
-                    "created_at": entry["created_at"],
-                    "text": entry["text"],
-                    "in_reply_to_screen_name": entry["in_reply_to_screen_name"],
-                    "retweet_count": entry["retweet_count"],
-                    "favorite_count": entry["favorite_count"],
-                    "source": self.get_source(entry),
-                    "id_str": entry["id_str"],
-                    "is_retweet": self.is_retweet(entry)
-                }
-                results.append(t)
+        output_base_name = output_base_name.lower()
+        output_file = '{}.json'.format(output_base_name)
+        output_file_txt = '{}.txt'.format(output_base_name)
 
-        print('creating minimized json master file')
-        with open(output_file_short, 'w') as outfile:
-            json.dump(results, outfile)
+        ids = self.get_ids(ids_input_file)
+        all_data = self.retrieve_tweets(api, ids)
 
-        with open(output_file_short) as master_file:
-            data = json.load(master_file)
-            fields = ["favorite_count", "source", "text", "in_reply_to_screen_name",
-                      "is_retweet", "created_at", "retweet_count", "id_str"]
-            print('creating CSV version of minimized json master file')
-            f = csv.writer(open('{}.csv'.format(output_base_name), 'w'))
-            f.writerow(fields)
-            for x in data:
-                f.writerow([x["favorite_count"], x["source"], x["text"], x["in_reply_to_screen_name"],
-                            x["is_retweet"], x["created_at"], x["retweet_count"], x["id_str"]])
+        self.write_tweets_json(output_file, all_data)
+        self.write_tweets_plain_text(output_file_txt, all_data)
 
 
 if __name__ == '__main__':
