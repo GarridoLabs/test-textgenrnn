@@ -1,20 +1,23 @@
+import datetime
+import json
+import sys
+from time import sleep
+
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
-from time import sleep
-import json
-import datetime
-import sys
 
 
-class TwitterScrape():
-
+class TwitterScrape:
     TWITTER_IDS_FILES_SUBFIX = "_ids.json"
     ID_SELECTOR = '.time a.tweet-timestamp'
     TWEET_SELECTOR = 'li.js-stream-item'
     TWEETS_PER_PAGE = 10
     DEFAULT_DELAY_IN_SECONDS = 1
+
+    @staticmethod
+    def parse_date(date):
+        return datetime.datetime.strptime(date, '%Y%m%d')
 
     def twitter_ids_filename(self, user: str):
         return user + self.TWITTER_IDS_FILES_SUBFIX
@@ -29,7 +32,7 @@ class TwitterScrape():
     def form_url(self, user, since, until):
         p1 = 'https://twitter.com/search?f=tweets&vertical=default&q=from%3A'
         p2 = user + '%20since%3A' + self.format_day(since) + '%20until%3A' + \
-            self.format_day(until) + 'include%3Aretweets&src=typd'
+             self.format_day(until) + 'include%3Aretweets&src=typd'
         return p1 + p2
 
     def increment_day(self, date, number_of_increments_in_days=1):
@@ -86,15 +89,15 @@ class TwitterScrape():
         driver.get(url)
         sleep(delay)
 
-    def scrape(self, user, startDate, endDate, delay=DEFAULT_DELAY_IN_SECONDS):
+    def scrape(self, user, start_date, end_date, delay=DEFAULT_DELAY_IN_SECONDS):
         driver = webdriver.Safari()  # options are Chrome() Firefox() Safari()
         user = user.lower()
-        days = (endDate - startDate).days + 1
+        days = (end_date - start_date).days + 1
         ids = []
         for _ in range(days):
             self.get_url(driver,
-                         self.form_url(user, startDate,
-                                       self.increment_day(startDate)),
+                         self.form_url(user, start_date,
+                                       self.increment_day(start_date)),
                          delay)
 
             try:
@@ -107,16 +110,12 @@ class TwitterScrape():
             except NoSuchElementException:
                 print('no tweets on this day')
 
-            startDate = self.increment_day(startDate)
+            start_date = self.increment_day(start_date)
 
         self.write_found_tweets(user, ids)
 
         print('all done here')
         driver.close()
-
-
-def parseDate(date):
-    return datetime.datetime.strptime(date, '%Y%m%d')
 
 
 if __name__ == '__main__':
@@ -126,6 +125,6 @@ if __name__ == '__main__':
 
     TwitterScrape().scrape(
         sys.argv[twitterUserParam],
-        parseDate(sys.argv[startDateParam]),
-        parseDate(sys.argv[endDateParam])
+        parse_date(sys.argv[startDateParam]),
+        parse_date(sys.argv[endDateParam])
     )
