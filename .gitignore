@@ -103,7 +103,16 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+#VSCode
+*.vscode/*
+
+#Intellij
+.idea/*
+
 resources/credentials/*.json
 resources/*_tweets*.txt
 resources/*_tweets*.csv
-*_ids.json
+resources/*_ids.json
+
+#Test
+test/test_output_file.txt
