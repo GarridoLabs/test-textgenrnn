@@ -52,8 +52,12 @@ class TestTwitterUserDump(unittest.TestCase):
         self.assertFalse(TweetsDump.is_retweet(tweet))
 
     def test_get_ids_return_correct_values(self):
-        expected = ["1043054925020901382", "1043020125014642694", "1043048036337901568"]
-        self.assertListEqual(TweetsDump.get_ids("resources/test_get_ids.json"), expected)
+        expected = [
+            "1043054925020901382",
+            "1043020125014642694",
+            "1043048036337901568"]
+        self.assertListEqual(TweetsDump.get_ids(
+            "resources/test_get_ids.json"), expected)
 
     def test_write_tweets_plain_text_generated_correctly_output_file(self):
         TweetsDump.write_non_retweeted_tweets_plain_text(output_file, tweets)

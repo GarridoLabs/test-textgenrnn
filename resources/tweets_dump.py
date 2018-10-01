@@ -46,7 +46,12 @@ class TweetsDump:
 
     @staticmethod
     def write_non_retweeted_tweets_plain_text(output_file, tweets):
-        f = csv.writer(open(output_file, 'w'), delimiter='\n', quoting=csv.QUOTE_NONE)
+        f = csv.writer(
+            open(
+                output_file,
+                'w'),
+            delimiter='\n',
+            quoting=csv.QUOTE_NONE)
         for tweet in tweets:
             if not TweetsDump.is_retweet(tweet):
                 f.writerow([tweet["text"]])
@@ -78,7 +83,6 @@ class TweetsDump:
         return all_tweets
 
     def dump_all_tweets(self, ids_input_file, output_base_name):
-
 
         output_base_name = output_base_name.lower()
         output_file = '{}.json'.format(output_base_name)

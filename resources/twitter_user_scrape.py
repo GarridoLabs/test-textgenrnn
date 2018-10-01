@@ -15,10 +15,6 @@ class TwitterScrape:
     TWEETS_PER_PAGE = 10
     DEFAULT_DELAY_IN_SECONDS = 1
 
-    @staticmethod
-    def parse_date(date):
-        return datetime.datetime.strptime(date, '%Y%m%d')
-
     def twitter_ids_filename(self, user: str):
         return user + self.TWITTER_IDS_FILES_SUBFIX
 
@@ -32,7 +28,7 @@ class TwitterScrape:
     def form_url(self, user, since, until):
         p1 = 'https://twitter.com/search?f=tweets&vertical=default&q=from%3A'
         p2 = user + '%20since%3A' + self.format_day(since) + '%20until%3A' + \
-             self.format_day(until) + 'include%3Aretweets&src=typd'
+            self.format_day(until) + 'include%3Aretweets&src=typd'
         return p1 + p2
 
     def increment_day(self, date, number_of_increments_in_days=1):
@@ -89,7 +85,8 @@ class TwitterScrape:
         driver.get(url)
         sleep(delay)
 
-    def scrape(self, user, start_date, end_date, delay=DEFAULT_DELAY_IN_SECONDS):
+    def scrape(self, user, start_date, end_date,
+               delay=DEFAULT_DELAY_IN_SECONDS):
         driver = webdriver.Safari()  # options are Chrome() Firefox() Safari()
         user = user.lower()
         days = (end_date - start_date).days + 1
@@ -122,6 +119,9 @@ if __name__ == '__main__':
     twitterUserParam = 1
     startDateParam = 2
     endDateParam = 3
+
+    def parse_date(date):
+        return datetime.datetime.strptime(date, '%Y%m%d')
 
     TwitterScrape().scrape(
         sys.argv[twitterUserParam],
