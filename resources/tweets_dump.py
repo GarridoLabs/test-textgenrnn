@@ -79,7 +79,6 @@ class TweetsDump:
             for tweet in tweets:
                 all_tweets.append(dict(tweet._json))
 
-        print('metadata collection complete')
         return all_tweets
 
     def dump_all_tweets(self, ids_input_file, output_base_name):
