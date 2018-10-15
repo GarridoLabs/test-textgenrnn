@@ -1,13 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
-import os
-import sys
-import unittest
-sys.path.insert(0, os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..')))
-from resources.tweets_dump import TweetsDump
-
 '''
     @license
 
@@ -16,6 +7,16 @@ from resources.tweets_dump import TweetsDump
     This source code is licensed under the Apache License, Version 2.0 found in
     the LICENSE.txt file in the root directory of this source tree.
 '''
+
+from __future__ import absolute_import
+
+import os
+import sys
+import unittest
+
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..')))
+from resources.tweets_dump import TweetsDump
 
 """
 Unit Tests
