@@ -48,7 +48,7 @@ class TweetsDump:
     @staticmethod
     def write_non_retweeted_tweets_plain_text(output_file, tweets):
         with open(output_file, 'w', newline='\n') as csvfile:
-            f = csv.writer(csvfile, quoting=csv.QUOTE_NONE)
+            f = csv.writer(csvfile, delimiter='\n', quoting=csv.QUOTE_NONE)
             for tweet in tweets:
                 if not TweetsDump.is_retweet(tweet):
                     f.writerow([tweet["text"]])
