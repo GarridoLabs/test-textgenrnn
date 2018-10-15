@@ -1,11 +1,4 @@
-import csv
-import json
-import math
-import sys
-from time import sleep
-
-import tweepy
-
+# -*- coding: utf-8 -*-
 '''
     @license
 
@@ -14,6 +7,14 @@ import tweepy
     This source code is licensed under the Apache License, Version 2.0 found in
     the LICENSE.txt file in the root directory of this source tree.
 '''
+
+import csv
+import json
+import math
+import sys
+from time import sleep
+
+import tweepy
 
 
 class TweetsDump:
