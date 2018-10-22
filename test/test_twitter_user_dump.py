@@ -12,7 +12,6 @@ from __future__ import absolute_import
 """
 Unit Tests
 """
-from time import gmtime, strftime
 import os
 import sys
 import unittest

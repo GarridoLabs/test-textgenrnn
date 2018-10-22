@@ -103,6 +103,16 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-resources/credentials/twitterCredentials.json
+#VSCode
+*.vscode/*
+
+#Intellij
+.idea/*
+
+resources/credentials/*.json
 resources/*_tweets*.txt
 resources/*_tweets*.csv
+resources/*_ids.json
+
+#Test
+test/test_output_file.txt
